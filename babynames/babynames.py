@@ -41,8 +41,47 @@ def extract_names(filename):
     followed by the name-rank strings in alphabetical order.
     ['2006', 'Aaliyah 91', Aaron 57', 'Abagail 895', ' ...]
     """
-    # +++your code here+++
-    return
+    year = '%s' % filename[4:8]
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+
+    name_list = []
+    name_dict = {}
+
+    for line in lines:
+        if not line.startswith('<tr align="right"><td>'):
+            continue
+
+        # strip extra texts
+        # from.....
+        # <tr align="right"><td>985</td><td>Tavon</td><td>Kimber</td>
+        # to.....
+        # 985</td><td>Tavon</td><td>Kimber
+        line = line[22:-6]
+
+        # get text between </td><td>
+        # ['985', 'Tavon', 'Kimber']
+        values = line.split('</td><td>')
+
+        # keep both names for sorting
+        name_list.append(values[1])
+        name_list.append(values[2])
+
+        # save position for both names
+        name_dict[values[1]] = values[0]
+        name_dict[values[2]] = values[0]
+
+    # sort names
+    name_list.sort()
+
+    # first item is the year
+    result = [year]
+
+    # other items are the name/position
+    for item in name_list:
+        result.append('%s %s' % (item, name_dict[item]))
+
+    return result
 
 
 def main():
@@ -61,9 +100,19 @@ def main():
         summary = True
         del args[0]
 
-        # +++your code here+++
-        # For each filename, get the names, then either print the text output
-        # or write it to a summary file
+    # For each filename, get the names, then either print the text output
+    # or write it to a summary file
+
+    for item in args:
+        the_list = extract_names(item)
+
+        if summary:
+            with open('baby_output.txt', 'a') as f:
+                # save the list as its terminal representation
+                f.write(the_list.__str__())
+                f.write('\n')
+        else:
+            print(the_list)
 
 
 if __name__ == '__main__':
