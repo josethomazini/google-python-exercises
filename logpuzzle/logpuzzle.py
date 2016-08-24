@@ -9,7 +9,7 @@
 import os
 import re
 import sys
-import urllib
+import urllib.request
 
 """Logpuzzle exercise
 Given an apache logfile, find the puzzle urls and download the images.
@@ -24,7 +24,35 @@ def read_urls(filename):
     extracting the hostname from the filename itself.
     Screens out duplicate urls and returns the urls sorted into
     increasing order."""
-    # +++your code here+++
+    result = []
+
+    # the filename seems NOT to be the host
+    # this url points to a valid code.google location
+    # https://groups.google.com/forum/#!topic/python-gcu-forum/CUhd-VQKAaY
+    base = 'http://code.google.com/edu/languages/google-python-class/images/puzzle/'
+
+    with open(filename, 'r') as f:
+        while True:
+            line = f.readline()
+            if not line:
+                break
+
+            found_text_location = line.find('/images/puzzle/')
+            if found_text_location < 0:
+                continue
+
+            start = found_text_location + 15
+            end = line.find('HTTP') - 1
+
+            result.append('%s%s' % (base, line[start:end]))
+
+    # removes duplicates
+    result = list(set(result))
+
+    # increasing order
+    result.sort()
+
+    return result
 
 
 def download_images(img_urls, dest_dir):
@@ -35,7 +63,26 @@ def download_images(img_urls, dest_dir):
     with an img tag to show each local image file.
     Creates the directory if necessary.
     """
-    # +++your code here+++
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+
+    img_names = []
+
+    for img_url in img_urls:
+        file_name = img_url.split('/')[-1]
+        if file_name.startswith('p-'):
+            file_name = '%s' % (file_name[7:])
+
+        path = '%s/%s' % (dest_dir, file_name)
+        img_names.append(file_name)
+        print('downloading %s' % img_url)
+        urllib.request.urlretrieve(img_url, path)
+
+    img_names.sort()
+
+    with open('%s/%s' % (dest_dir, 'index.html'), 'w') as f:
+        for name in img_names:
+            f.write('<img src=%s>' % name)
 
 
 def main():
