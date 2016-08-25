@@ -21,6 +21,44 @@ import subprocess
 """
 
 
+def get_special_paths(dir, file_names_dict):
+    # returns a list of the absolute paths of the special files in the given directory
+    result = []
+
+    if dir == '.':
+        dir = os.getcwd()
+
+    for item in os.listdir(dir):
+        if item in file_names_dict:
+            print('Names must not be repeated across the directories')
+            sys.exit(1)
+        else:
+            file_names_dict[item] = None
+
+        if re.match(r'.*__\w+__.*', item):
+            result.append('%s/%s' % (dir, item))
+
+    return result
+
+
+def copy_to(paths, dir):
+    # given a list of paths, copies those files into the given directory
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
+    for item in paths:
+        shutil.copy2(item, dir)
+
+
+def zip_to(paths, zippath):
+    # given a list of paths, zip those files up into the given zipfile
+    paths_sequence = ' '.join(paths)
+    zip_command = 'zip -j %s %s' % (zippath, paths_sequence)
+
+    print("Command I'm going to do: %s" % zip_command)
+    subprocess.run(zip_command.split())
+
+
 # +++your code here+++
 # Write functions and modify main() to call them
 
@@ -53,8 +91,20 @@ def main():
         print("error: must specify one or more dirs")
         sys.exit(1)
 
-        # +++your code here+++
-        # Call your functions
+    # unique name helper struct
+    file_names_dict = {}
+
+    # all paths
+    paths = []
+
+    for item in args:
+        paths.extend(get_special_paths(item, file_names_dict))
+
+    if todir:
+        copy_to(paths, todir)
+
+    if tozip:
+        zip_to(paths, tozip)
 
 
 if __name__ == "__main__":
