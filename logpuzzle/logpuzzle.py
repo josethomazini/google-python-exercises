@@ -70,6 +70,8 @@ def download_images(img_urls, dest_dir):
 
     for img_url in img_urls:
         file_name = img_url.split('/')[-1]
+
+        # puzzle pattern found? remove the evil prefix!!!
         if file_name.startswith('p-'):
             file_name = '%s' % (file_name[7:])
 
